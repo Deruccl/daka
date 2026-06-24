@@ -258,11 +258,11 @@
   - [x] SubTask 37.3: 实现键盘导航、TalkBack 屏幕阅读器支持
   - [x] SubTask 37.4: 实现平板双栏布局适配
 
-- [ ] Task 38: UI 设计系统与错误处理补全
-  - [ ] SubTask 38.1: 集成自定义字体（Noto Sans SC、Inter、JetBrains Mono）
-  - [ ] SubTask 38.2: 实现主题切换 600ms 平滑过渡动画
-  - [ ] SubTask 38.3: 实现日志文件大小限制、用户可开关日志、日志导出
-  - [ ] SubTask 38.4: 实现可选的崩溃收集（本地保存，用户可关闭）
+- [x] Task 38: UI 设计系统与错误处理补全
+  - [x] SubTask 38.1: 集成自定义字体（Noto Sans SC、Inter、JetBrains Mono）
+  - [x] SubTask 38.2: 实现主题切换 600ms 平滑过渡动画
+  - [x] SubTask 38.3: 实现日志文件大小限制、用户可开关日志、日志导出
+  - [x] SubTask 38.4: 实现可选的崩溃收集（本地保存，用户可关闭）
 
 # Task Dependencies
 
