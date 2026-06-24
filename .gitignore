@@ -1,0 +1,40 @@
+# ====================================
+# 时光印记 TimeMark - Git 忽略配置
+# ====================================
+
+# ---------- 构建产物 ----------
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# ---------- 各模块构建目录 ----------
+*/build/
+app/build/
+core/build/
+data/build/
+domain/build/
+ai/build/
+feature-home/build/
+feature-tracker/build/
+feature-stats/build/
+feature-ai/build/
+feature-settings/build/
+
+# ---------- 签名密钥（绝不提交） ----------
+keystore.properties
+*.jks
+*.keystore
+
+# ---------- 本地敏感配置 ----------
+local.properties
+
+# ---------- 性能/调试产物 ----------
+*.hprof
+*.trace
+.compose/

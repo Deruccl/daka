@@ -1,0 +1,77 @@
+# ====================================
+# 时光印记 TimeMark - Baseline Profile
+# ====================================
+# 本文件定义应用启动与关键路径的 AOT 预编译类与方法。
+# 配合 Macrobenchmark 模块使用，可显著降低冷启动时间与首帧 jank。
+#
+# 生成方式：
+#   1. 添加 macrobenchmark 模块
+#   2. 运行 BaselineProfileGenerator 测试
+#   3. 将生成的 baseline-prof.txt 复制到本位置
+#
+# 以下为手动维护的关键路径配置（可被自动生成结果覆盖）。
+# ====================================
+
+# ---------- Application 启动 ----------
+Lcom/timemark/app/TimeMarkApp;
+Lcom/timemark/app/TimeMarkApp;->onCreate()V
+Lcom/timemark/app/TimeMarkApp;->createNotificationChannels()V
+Lcom/timemark/app/TimeMarkApp;->configureLeakCanary()V
+Lcom/timemark/app/TimeMarkApp;->getWorkManagerConfiguration()Landroidx/work/Configuration;
+
+# ---------- MainActivity ----------
+Lcom/timemark/app/MainActivity;
+Lcom/timemark/app/MainActivity;->onCreate(Landroid/os/Bundle;)V
+
+# ---------- Hilt 依赖注入（启动时初始化） #
+Lcom/timemark/app/di/DatabaseModule;
+Lcom/timemark/app/di/DatabaseModule;->provideDatabase(Landroid/content/Context;)Lcom/timemark/app/data/db/TimeMarkDatabase;
+Lcom/timemark/app/di/DatabaseModule;->provideTrackerDao(Lcom/timemark/app/data/db/TimeMarkDatabase;)Lcom/timemark/app/data/db/dao/TrackerDao;
+Lcom/timemark/app/di/DatabaseModule;->provideRecordDao(Lcom/timemark/app/data/db/TimeMarkDatabase;)Lcom/timemark/app/data/db/dao/RecordDao;
+Lcom/timemark/app/di/DataStoreModule;
+Lcom/timemark/app/di/NetworkModule;
+Lcom/timemark/app/di/RepositoryModule;
+Lcom/timemark/app/di/AIModule;
+
+# ---------- Room 数据库（启动时查询） #
+Lcom/timemark/app/data/db/TimeMarkDatabase;
+Lcom/timemark/app/data/db/dao/TrackerDao;
+Lcom/timemark/app/data/db/dao/RecordDao;
+Lcom/timemark/app/data/db/dao/StatsDao;
+Lcom/timemark/app/data/db/entity/TrackerEntity;
+Lcom/timemark/app/data/db/entity/RecordEntity;
+Lcom/timemark/app/data/db/entity/DailyStatsEntity;
+
+# ---------- 首页 ViewModel 与 UI #
+Lcom/timemark/app/feature/home/HomeViewModel;
+Lcom/timemark/app/feature/home/HomeScreenKt;
+Lcom/timemark/app/feature/home/HomeContentKt;
+Lcom/timemark/app/feature/home/HomeHeaderKt;
+Lcom/timemark/app/feature/home/TodayOverviewKt;
+Lcom/timemark/app/feature/home/TrackerCardKt;
+
+# ---------- 导航 #
+Lcom/timemark/app/ui/navigation/TimeMarkNavHostKt;
+Lcom/timemark/app/ui/navigation/BottomNavItemKt;
+Lcom/timemark/app/ui/ScaffoldMainKt;
+
+# ---------- Repository（首页数据加载） #
+Lcom/timemark/app/data/repository/TrackerRepositoryImpl;
+Lcom/timemark/app/data/repository/RecordRepositoryImpl;
+Lcom/timemark/app/data/repository/StatsRepositoryImpl;
+
+# ---------- 领域模型（启动时反序列化） #
+Lcom/timemark/app/domain/model/Tracker;
+Lcom/timemark/app/domain/model/Record;
+Lcom/timemark/app/domain/model/DailyStats;
+Lcom/timemark/app/domain/model/Enums;
+
+# ---------- Compose 运行时（关键路径） #
+Landroidx/compose/runtime/ComposerKt;
+Landroidx/compose/runtime/CompositionKt;
+Landroidx/compose/runtime/Recomposer;
+Landroidx/compose/ui/platform/ComposeView;
+
+# ---------- 协程调度器 #
+Lkotlinx/coroutines/Dispatchers;
+Lkotlinx/coroutines/android/AndroidDispatcherFactory;

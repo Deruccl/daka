@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 基础颜色 -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- 主题色：时光印记 - 温暖琥珀 -->
+    <color name="md_theme_primary">#FF8C4B</color>
+    <color name="md_theme_on_primary">#FFFFFF</color>
+    <color name="md_theme_primary_container">#FFDBC9</color>
+    <color name="md_theme_on_primary_container">#2E1500</color>
+
+    <color name="md_theme_secondary">#77574B</color>
+    <color name="md_theme_on_secondary">#FFFFFF</color>
+    <color name="md_theme_secondary_container">#FFDBC9</color>
+    <color name="md_theme_on_secondary_container">#2C150A</color>
+
+    <color name="md_theme_tertiary">#6C5D2F</color>
+    <color name="md_theme_on_tertiary">#FFFFFF</color>
+    <color name="md_theme_tertiary_container">#F6E0A7</color>
+    <color name="md_theme_on_tertiary_container">#221B00</color>
+
+    <color name="md_theme_error">#BA1A1A</color>
+    <color name="md_theme_on_error">#FFFFFF</color>
+    <color name="md_theme_error_container">#FFDAD6</color>
+    <color name="md_theme_on_error_container">#410002</color>
+
+    <color name="md_theme_background">#FFF8F5</color>
+    <color name="md_theme_on_background">#221A14</color>
+    <color name="md_theme_surface">#FFF8F5</color>
+    <color name="md_theme_on_surface">#221A14</color>
+    <color name="md_theme_surface_variant">#F5DED2</color>
+    <color name="md_theme_on_surface_variant">#534339</color>
+    <color name="md_theme_outline">#857468</color>
+</resources>

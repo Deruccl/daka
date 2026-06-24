@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 时光印记 主题（基于 Material3） -->
+    <style name="Theme.TimeMark" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/md_theme_background</item>
+        <item name="android:statusBarColor" tools:targetApi="l">@color/md_theme_background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:navigationBarColor">@color/md_theme_background</item>
+    </style>
+
+</resources>
