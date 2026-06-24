@@ -50,6 +50,17 @@ interface SettingsRepository {
     val aiCacheEnabled: Flow<Boolean>
     val aiImageQuality: Flow<Int>
 
+    // Task 37.2: 无障碍相关
+    val highContrastMode: Flow<Boolean>
+    val fontScale: Flow<Float>
+
+    // Task 38.3: 日志管理相关
+    val loggingEnabled: Flow<Boolean>
+    val logLevel: Flow<String>
+
+    // Task 38.4: 崩溃收集相关
+    val crashReportEnabled: Flow<Boolean>
+
     suspend fun setThemeMode(mode: ThemeMode)
     suspend fun setBlurEnabled(enabled: Boolean)
     suspend fun setAnimationEnabled(enabled: Boolean)
@@ -92,4 +103,15 @@ interface SettingsRepository {
     // Task 33.4: Token 优化相关 setter
     suspend fun setAICacheEnabled(enabled: Boolean)
     suspend fun setAIImageQuality(quality: Int)
+
+    // Task 37.2: 无障碍相关 setter
+    suspend fun setHighContrastMode(enabled: Boolean)
+    suspend fun setFontScale(scale: Float)
+
+    // Task 38.3: 日志管理相关 setter
+    suspend fun setLoggingEnabled(enabled: Boolean)
+    suspend fun setLogLevel(level: String)
+
+    // Task 38.4: 崩溃收集相关 setter
+    suspend fun setCrashReportEnabled(enabled: Boolean)
 }

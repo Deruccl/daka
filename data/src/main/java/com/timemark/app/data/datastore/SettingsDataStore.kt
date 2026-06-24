@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.timemark.app.data.security.KeystoreCrypto
@@ -60,6 +61,17 @@ object SettingsKeys {
     // Task 33.4: Token 优化相关 key
     val AI_CACHE_ENABLED = booleanPreferencesKey("ai_cache_enabled")
     val AI_IMAGE_QUALITY = intPreferencesKey("ai_image_quality") // 50-100
+
+    // Task 37.2: 无障碍相关 key
+    val HIGH_CONTRAST_MODE = booleanPreferencesKey("high_contrast_mode")
+    val FONT_SCALE = floatPreferencesKey("font_scale") // 1.0 / 1.15 / 1.3
+
+    // Task 38.3: 日志管理相关 key
+    val LOGGING_ENABLED = booleanPreferencesKey("logging_enabled")
+    val LOG_LEVEL = stringPreferencesKey("log_level") // DEBUG/INFO/WARN/ERROR
+
+    // Task 38.4: 崩溃收集相关 key
+    val CRASH_REPORT_ENABLED = booleanPreferencesKey("crash_report_enabled")
 }
 
 /**
@@ -191,6 +203,24 @@ class SettingsDataStore(private val context: Context) {
 
     /** 图片压缩质量（50-100） */
     val aiImageQuality: Flow<Int> = context.dataStore.data.map { it[SettingsKeys.AI_IMAGE_QUALITY] ?: 80 }
+
+    // Task 37.2: 无障碍相关
+    /** 高对比度模式开关 */
+    val highContrastMode: Flow<Boolean> = context.dataStore.data.map { it[SettingsKeys.HIGH_CONTRAST_MODE] ?: false }
+
+    /** 字体缩放比例（1.0 / 1.15 / 1.3） */
+    val fontScale: Flow<Float> = context.dataStore.data.map { it[SettingsKeys.FONT_SCALE] ?: 1.0f }
+
+    // Task 38.3: 日志管理相关
+    /** 日志开关（默认 true） */
+    val loggingEnabled: Flow<Boolean> = context.dataStore.data.map { it[SettingsKeys.LOGGING_ENABLED] ?: true }
+
+    /** 日志级别（DEBUG/INFO/WARN/ERROR，默认 DEBUG） */
+    val logLevel: Flow<String> = context.dataStore.data.map { it[SettingsKeys.LOG_LEVEL] ?: "DEBUG" }
+
+    // Task 38.4: 崩溃收集相关
+    /** 崩溃收集开关（默认 true） */
+    val crashReportEnabled: Flow<Boolean> = context.dataStore.data.map { it[SettingsKeys.CRASH_REPORT_ENABLED] ?: true }
 
     suspend fun setThemeMode(mode: ThemeMode) {
         context.dataStore.edit { it[SettingsKeys.THEME_MODE] = mode.name }
@@ -366,6 +396,35 @@ class SettingsDataStore(private val context: Context) {
     suspend fun setAIImageQuality(quality: Int) {
         val clamped = quality.coerceIn(50, 100)
         context.dataStore.edit { it[SettingsKeys.AI_IMAGE_QUALITY] = clamped }
+    }
+
+    // Task 37.2: 无障碍相关 setter
+    /** 设置高对比度模式开关 */
+    suspend fun setHighContrastMode(enabled: Boolean) {
+        context.dataStore.edit { it[SettingsKeys.HIGH_CONTRAST_MODE] = enabled }
+    }
+
+    /** 设置字体缩放比例（限制在 1.0-1.3） */
+    suspend fun setFontScale(scale: Float) {
+        val clamped = scale.coerceIn(1.0f, 1.3f)
+        context.dataStore.edit { it[SettingsKeys.FONT_SCALE] = clamped }
+    }
+
+    // Task 38.3: 日志管理相关 setter
+    /** 设置日志开关 */
+    suspend fun updateLoggingEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[SettingsKeys.LOGGING_ENABLED] = enabled }
+    }
+
+    /** 设置日志级别（DEBUG/INFO/WARN/ERROR） */
+    suspend fun updateLogLevel(level: String) {
+        context.dataStore.edit { it[SettingsKeys.LOG_LEVEL] = level }
+    }
+
+    // Task 38.4: 崩溃收集相关 setter
+    /** 设置崩溃收集开关 */
+    suspend fun updateCrashReportEnabled(enabled: Boolean) {
+        context.dataStore.edit { it[SettingsKeys.CRASH_REPORT_ENABLED] = enabled }
     }
 
     /** 解密密文，失败时返回 null（兼容历史数据或异常情况）。 */

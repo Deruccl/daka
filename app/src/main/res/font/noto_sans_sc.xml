@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Noto Sans SC 字体族配置 (Task 38.1)
+
+    使用前请下载以下 TTF 文件并放入 app/src/main/res/font/ 目录：
+    - noto_sans_sc_regular.ttf (FontWeight.Normal, 400)
+    - noto_sans_sc_medium.ttf  (FontWeight.Medium, 500)
+    - noto_sans_sc_bold.ttf    (FontWeight.Bold, 700)
+
+    下载地址：https://fonts.google.com/noto/specimen/Noto+Sans+SC
+
+    下载后取消注释下方 <font> 元素即可启用。
+    未提供 TTF 文件时，应用将自动降级为系统默认字体（Type.kt 中通过运行时资源查找实现降级）。
+-->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- <font android:fontStyle="normal" android:fontWeight="400" android:font="@font/noto_sans_sc_regular" /> -->
+    <!-- <font android:fontStyle="normal" android:fontWeight="500" android:font="@font/noto_sans_sc_medium" /> -->
+    <!-- <font android:fontStyle="normal" android:fontWeight="700" android:font="@font/noto_sans_sc_bold" /> -->
+</font-family>

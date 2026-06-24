@@ -59,6 +59,17 @@ class SettingsRepositoryImpl @Inject constructor(
     override val aiCacheEnabled: Flow<Boolean> = settingsDataStore.aiCacheEnabled
     override val aiImageQuality: Flow<Int> = settingsDataStore.aiImageQuality
 
+    // Task 37.2: 无障碍相关
+    override val highContrastMode: Flow<Boolean> = settingsDataStore.highContrastMode
+    override val fontScale: Flow<Float> = settingsDataStore.fontScale
+
+    // Task 38.3: 日志管理相关
+    override val loggingEnabled: Flow<Boolean> = settingsDataStore.loggingEnabled
+    override val logLevel: Flow<String> = settingsDataStore.logLevel
+
+    // Task 38.4: 崩溃收集相关
+    override val crashReportEnabled: Flow<Boolean> = settingsDataStore.crashReportEnabled
+
     override suspend fun setThemeMode(mode: ThemeMode) = settingsDataStore.setThemeMode(mode)
     override suspend fun setBlurEnabled(enabled: Boolean) = settingsDataStore.setBlurEnabled(enabled)
     override suspend fun setAnimationEnabled(enabled: Boolean) = settingsDataStore.setAnimationEnabled(enabled)
@@ -102,4 +113,15 @@ class SettingsRepositoryImpl @Inject constructor(
     // Task 33.4: Token 优化相关 setter
     override suspend fun setAICacheEnabled(enabled: Boolean) = settingsDataStore.setAICacheEnabled(enabled)
     override suspend fun setAIImageQuality(quality: Int) = settingsDataStore.setAIImageQuality(quality)
+
+    // Task 37.2: 无障碍相关 setter
+    override suspend fun setHighContrastMode(enabled: Boolean) = settingsDataStore.setHighContrastMode(enabled)
+    override suspend fun setFontScale(scale: Float) = settingsDataStore.setFontScale(scale)
+
+    // Task 38.3: 日志管理相关 setter
+    override suspend fun setLoggingEnabled(enabled: Boolean) = settingsDataStore.updateLoggingEnabled(enabled)
+    override suspend fun setLogLevel(level: String) = settingsDataStore.updateLogLevel(level)
+
+    // Task 38.4: 崩溃收集相关 setter
+    override suspend fun setCrashReportEnabled(enabled: Boolean) = settingsDataStore.updateCrashReportEnabled(enabled)
 }

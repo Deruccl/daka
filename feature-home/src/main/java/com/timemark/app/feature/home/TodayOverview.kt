@@ -38,13 +38,16 @@ import com.timemark.app.core.ui.components.glass.GlassLevel
  * - 今日亮点（根据完成率给出激励文案）
  */
 @Composable
-fun TodayOverview(state: HomeUiState.Loaded) {
+fun TodayOverview(
+    state: HomeUiState.Loaded,
+    modifier: Modifier = Modifier
+) {
     var expanded by remember { mutableStateOf(false) }
     val maxStreak = state.trackers.maxOfOrNull { it.streak } ?: 0
 
     GlassCard(
         level = GlassLevel.LIGHT,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             // 标题行 + 展开/收起按钮

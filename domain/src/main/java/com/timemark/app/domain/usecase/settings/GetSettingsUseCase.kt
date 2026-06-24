@@ -55,6 +55,13 @@ class GetSettingsUseCase @Inject constructor(
     fun aiCacheEnabled(): Flow<Boolean> = settingsRepository.aiCacheEnabled
     fun aiImageQuality(): Flow<Int> = settingsRepository.aiImageQuality
 
+    // Task 37.2: 无障碍相关
+    /** 高对比度模式开关 */
+    fun highContrastMode(): Flow<Boolean> = settingsRepository.highContrastMode
+
+    /** 字体缩放比例 */
+    fun fontScale(): Flow<Float> = settingsRepository.fontScale
+
     /** 获取应用锁密码（明文，已从 Keystore 解密） */
     fun lockPassword(): Flow<String?> = settingsRepository.lockPassword
 
@@ -63,4 +70,15 @@ class GetSettingsUseCase @Inject constructor(
 
     /** 获取数据库密码（明文，已从 Keystore 解密） */
     fun databasePassword(): Flow<String?> = settingsRepository.databasePassword
+
+    // Task 38.3: 日志管理相关
+    /** 日志开关 */
+    fun loggingEnabled(): Flow<Boolean> = settingsRepository.loggingEnabled
+
+    /** 日志级别 */
+    fun logLevel(): Flow<String> = settingsRepository.logLevel
+
+    // Task 38.4: 崩溃收集相关
+    /** 崩溃收集开关 */
+    fun crashReportEnabled(): Flow<Boolean> = settingsRepository.crashReportEnabled
 }

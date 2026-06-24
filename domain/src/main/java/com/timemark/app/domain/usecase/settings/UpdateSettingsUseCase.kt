@@ -55,6 +55,13 @@ class UpdateSettingsUseCase @Inject constructor(
     suspend fun aiCacheEnabled(enabled: Boolean) = settingsRepository.setAICacheEnabled(enabled)
     suspend fun aiImageQuality(quality: Int) = settingsRepository.setAIImageQuality(quality)
 
+    // Task 37.2: 无障碍相关 setter
+    /** 设置高对比度模式开关 */
+    suspend fun highContrastMode(enabled: Boolean) = settingsRepository.setHighContrastMode(enabled)
+
+    /** 设置字体缩放比例 */
+    suspend fun fontScale(scale: Float) = settingsRepository.setFontScale(scale)
+
     /** 设置应用锁密码（明文，内部经 Keystore 加密后存储） */
     suspend fun lockPassword(password: String?) = settingsRepository.setLockPassword(password)
 
@@ -63,4 +70,15 @@ class UpdateSettingsUseCase @Inject constructor(
 
     /** 设置数据库密码（明文，内部经 Keystore 加密后存储） */
     suspend fun databasePassword(password: String?) = settingsRepository.setDatabasePassword(password)
+
+    // Task 38.3: 日志管理相关 setter
+    /** 设置日志开关 */
+    suspend fun loggingEnabled(enabled: Boolean) = settingsRepository.setLoggingEnabled(enabled)
+
+    /** 设置日志级别 */
+    suspend fun logLevel(level: String) = settingsRepository.setLogLevel(level)
+
+    // Task 38.4: 崩溃收集相关 setter
+    /** 设置崩溃收集开关 */
+    suspend fun crashReportEnabled(enabled: Boolean) = settingsRepository.setCrashReportEnabled(enabled)
 }

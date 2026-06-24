@@ -57,6 +57,12 @@ sealed class Route(val route: String) {
     /** Token 用量统计 */
     object TokenUsage : Route("token_usage")
 
+    /** Task 36.3: 协同效果对比 */
+    object CollaborativeStats : Route("collaborative_stats")
+
+    /** Task 36.4: API 性能监控 */
+    object PerformanceMonitor : Route("performance_monitor")
+
     /** 备份与恢复 */
     object BackupRestore : Route("backup_restore")
 
@@ -79,4 +85,10 @@ sealed class Route(val route: String) {
 
     /** 关于 */
     object About : Route("about")
+
+    /** Task 38.3: 日志管理 */
+    object LogSettings : Route("log_settings")
+
+    /** Task 38.4: 崩溃日志 */
+    object CrashLog : Route("crash_log")
 }

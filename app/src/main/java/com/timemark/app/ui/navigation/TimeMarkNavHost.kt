@@ -16,7 +16,9 @@ import com.timemark.app.feature.ai.AIConfigAddScreen
 import com.timemark.app.feature.ai.AIConfigEditScreen
 import com.timemark.app.feature.ai.AIConfigScreen
 import com.timemark.app.feature.ai.AIScreen
+import com.timemark.app.feature.ai.CollaborativeStatsScreen
 import com.timemark.app.feature.ai.FoodRecognitionScreen
+import com.timemark.app.feature.ai.PerformanceMonitorScreen
 import com.timemark.app.feature.ai.TokenUsageScreen
 import com.timemark.app.feature.ai.analysis.AnalysisListScreen
 import com.timemark.app.feature.ai.analysis.AnalysisResultScreen
@@ -24,6 +26,8 @@ import com.timemark.app.feature.home.HomeScreen
 import com.timemark.app.feature.settings.AboutScreen
 import com.timemark.app.feature.settings.AIFeatureSettingsScreen
 import com.timemark.app.feature.settings.BackupRestoreScreen
+import com.timemark.app.feature.settings.CrashLogScreen
+import com.timemark.app.feature.settings.LogSettingsScreen
 import com.timemark.app.feature.settings.SettingsScreen
 import com.timemark.app.feature.settings.lock.AppLockScreen
 import com.timemark.app.feature.settings.NetworkLogScreen
@@ -96,6 +100,10 @@ fun TimeMarkNavHost(
         composable(Route.AIChat.route) { AIChatScreen(navController) }
         composable(Route.FoodRecognition.route) { FoodRecognitionScreen(navController) }
         composable(Route.TokenUsage.route) { TokenUsageScreen(navController) }
+        // Task 36.3: 协同效果对比
+        composable(Route.CollaborativeStats.route) { CollaborativeStatsScreen(navController) }
+        // Task 36.4: API 性能监控
+        composable(Route.PerformanceMonitor.route) { PerformanceMonitorScreen(navController) }
         // Task 33.1: AI 分析页面
         composable(Route.AnalysisList.route) { AnalysisListScreen(navController) }
         composable(
@@ -113,5 +121,9 @@ fun TimeMarkNavHost(
         // Task 33.3: AI 功能设置
         composable(Route.AIFeatureSettings.route) { AIFeatureSettingsScreen(navController) }
         composable(Route.About.route) { AboutScreen(navController) }
+        // Task 38.3: 日志管理
+        composable(Route.LogSettings.route) { LogSettingsScreen(navController) }
+        // Task 38.4: 崩溃日志
+        composable(Route.CrashLog.route) { CrashLogScreen(navController) }
     }
 }

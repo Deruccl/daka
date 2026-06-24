@@ -43,7 +43,8 @@ object DatabaseModule {
             TimeMarkDatabase.DATABASE_NAME
         )
             // Task 33.2: v1 -> v2 迁移，新增 chat_history 表
-            .addMigrations(TimeMarkDatabase.MIGRATION_1_2)
+            // Task 36.2: v2 -> v3 迁移，ai_configs 新增 proxyConfig 列
+            .addMigrations(TimeMarkDatabase.MIGRATION_1_2, TimeMarkDatabase.MIGRATION_2_3)
             .fallbackToDestructiveMigration()
 
         // Task 32.3: 根据设置决定是否启用 SQLCipher 加密

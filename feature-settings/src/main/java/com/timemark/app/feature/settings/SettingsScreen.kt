@@ -66,6 +66,12 @@ fun SettingsScreen(navController: NavController) {
     val autoBackupKeepCount by viewModel.autoBackupKeepCount.collectAsStateWithLifecycle()
     val networkLogEnabled by viewModel.networkLogEnabled.collectAsStateWithLifecycle()
     val disableNetworkAccess by viewModel.disableNetworkAccess.collectAsStateWithLifecycle()
+    // Task 37.2: 无障碍设置
+    val highContrastMode by viewModel.highContrastMode.collectAsStateWithLifecycle()
+    val fontScale by viewModel.fontScale.collectAsStateWithLifecycle()
+    // Task 38.3/38.4: 日志与崩溃收集设置
+    val loggingEnabled by viewModel.loggingEnabled.collectAsStateWithLifecycle()
+    val crashReportEnabled by viewModel.crashReportEnabled.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = { GlassTopBar(title = "设置") }
@@ -99,6 +105,24 @@ fun SettingsScreen(navController: NavController) {
                         checked = animationEnabled,
                         onCheckedChange = viewModel::setAnimationEnabled,
                         description = "页面切换与交互动画"
+                    )
+                    // Task 37.2: 高对比度模式
+                    SwitchSettingItem(
+                        title = "高对比度模式",
+                        checked = highContrastMode,
+                        onCheckedChange = viewModel::setHighContrastMode,
+                        description = "增强文字与背景对比度，提升可读性"
+                    )
+                    // Task 37.2: 字体缩放
+                    SelectSettingItem(
+                        title = "字体大小",
+                        selectedLabel = fontScaleLabel(fontScale),
+                        options = listOf(
+                            "标准" to 1.0f,
+                            "大号" to 1.15f,
+                            "超大号" to 1.3f
+                        ),
+                        onSelect = viewModel::setFontScale
                     )
                 }
             }
@@ -246,6 +270,18 @@ fun SettingsScreen(navController: NavController) {
                         title = "导出数据",
                         onClick = { navController.navigate("backup_restore") },
                         description = "导出为 CSV / JSON / PDF"
+                    )
+                    // Task 38.3: 日志管理入口
+                    NavigateSettingItem(
+                        title = "日志管理",
+                        onClick = { navController.navigate("log_settings") },
+                        description = if (loggingEnabled) "日志已启用" else "日志已关闭"
+                    )
+                    // Task 38.4: 崩溃日志入口
+                    NavigateSettingItem(
+                        title = "崩溃日志",
+                        onClick = { navController.navigate("crash_log") },
+                        description = if (crashReportEnabled) "崩溃收集已启用" else "崩溃收集已关闭"
                     )
                 }
             }
@@ -430,4 +466,11 @@ private fun autoBackupFrequencyLabel(frequency: String): String = when (frequenc
     "weekly" -> "每周"
     "monthly" -> "每月"
     else -> frequency
+}
+
+/** 字体大小显示文字（Task 37.2） */
+private fun fontScaleLabel(scale: Float): String = when {
+    scale >= 1.3f -> "超大号"
+    scale >= 1.15f -> "大号"
+    else -> "标准"
 }

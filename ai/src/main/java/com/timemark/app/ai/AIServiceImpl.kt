@@ -13,6 +13,7 @@ import com.timemark.app.ai.provider.OpenAIProvider
 import com.timemark.app.ai.provider.ZhipuProvider
 import com.timemark.app.domain.model.AIFeature
 import com.timemark.app.domain.model.AIConfig
+import com.timemark.app.domain.model.AIProvider as AIProviderEnum
 import com.timemark.app.domain.model.AIUsage
 import com.timemark.app.domain.model.ChatRequest
 import com.timemark.app.domain.model.ChatResponse
@@ -24,6 +25,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import java.time.LocalDate
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,6 +42,8 @@ import javax.inject.Singleton
  * 7. 缓存成功响应以节省 Token（Task 33.4）
  * 8. 支持故障转移：主配置失败时按优先级尝试备用配置
  * 9. 支持智能路由：根据功能类型选择合适的模型
+ * 10. Task 36.2: 支持为每个 Provider 配置 HTTP 代理
+ * 11. Task 36.4: 通过 PerformanceMonitor 记录请求性能指标
  */
 @Singleton
 class AIServiceImpl @Inject constructor(
@@ -47,25 +51,76 @@ class AIServiceImpl @Inject constructor(
     private val json: Json,
     private val aiUsageRepository: AIUsageRepository,
     private val aiConfigRepository: AIConfigRepository,
-    private val settingsRepository: SettingsRepository
+    private val settingsRepository: SettingsRepository,
+    private val proxyManager: ProxyManager,
+    private val performanceMonitor: PerformanceMonitor
 ) : AIService {
 
-    /** 厂商 -> Provider 实例映射 */
-    private val providers: Map<com.timemark.app.domain.model.AIProvider, AIProviderInterface> = mapOf(
-        com.timemark.app.domain.model.AIProvider.OPENAI to OpenAIProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.ANTHROPIC to AnthropicProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.GEMINI to GeminiProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.BAIDU to BaiduProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.ALIBABA to AlibabaProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.BYTEDANCE to ByteDanceProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.ZHIPU to ZhipuProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.MOONSHOT to MoonshotProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.OLLAMA to OllamaProvider(okHttpClient, json),
-        com.timemark.app.domain.model.AIProvider.CUSTOM to CustomProvider(okHttpClient, json)
+    /** 厂商 -> Provider 实例映射（无代理的基础实例） */
+    private val providers: Map<AIProviderEnum, AIProviderInterface> = mapOf(
+        AIProviderEnum.OPENAI to OpenAIProvider(okHttpClient, json),
+        AIProviderEnum.ANTHROPIC to AnthropicProvider(okHttpClient, json),
+        AIProviderEnum.GEMINI to GeminiProvider(okHttpClient, json),
+        AIProviderEnum.BAIDU to BaiduProvider(okHttpClient, json),
+        AIProviderEnum.ALIBABA to AlibabaProvider(okHttpClient, json),
+        AIProviderEnum.BYTEDANCE to ByteDanceProvider(okHttpClient, json),
+        AIProviderEnum.ZHIPU to ZhipuProvider(okHttpClient, json),
+        AIProviderEnum.MOONSHOT to MoonshotProvider(okHttpClient, json),
+        AIProviderEnum.OLLAMA to OllamaProvider(okHttpClient, json),
+        AIProviderEnum.CUSTOM to CustomProvider(okHttpClient, json)
     )
+
+    /**
+     * Task 36.2: 带代理的 Provider 缓存
+     * key 为 "厂商:代理标识"，避免为相同代理配置重复创建 Provider
+     */
+    private val proxiedProviderCache = ConcurrentHashMap<String, AIProviderInterface>()
 
     /** AI 响应缓存（Task 33.4） */
     private val responseCache: AIResponseCache = AIResponseCache()
+
+    /**
+     * Task 36.2: 根据配置获取 Provider 实例
+     *
+     * - 无代理配置时，返回基础 Provider 实例（来自 [providers] 映射）
+     * - 有代理配置时，创建/复用带代理的 Provider 实例
+     *
+     * @param config AI 配置，可能包含 proxyConfig
+     * @return 对应的 Provider 实例，null 表示不支持的厂商
+     */
+    private fun providerForConfig(config: AIConfig): AIProviderInterface? {
+        val proxyConfig = config.proxyConfig
+        // 无代理或代理未启用：使用基础 Provider
+        if (proxyConfig == null || !proxyConfig.enabled || proxyConfig.host.isBlank()) {
+            return providers[config.provider]
+        }
+
+        // 带代理：从缓存获取或创建新的 Provider 实例
+        val cacheKey = "${config.provider.name}:${proxyConfig.host}:${proxyConfig.port}:${proxyConfig.username ?: ""}"
+        return proxiedProviderCache.getOrPut(cacheKey) {
+            val proxiedClient = proxyManager.getProxiedClient(proxyConfig)
+            createProvider(config.provider, proxiedClient)
+        }
+    }
+
+    /**
+     * Task 36.2: 创建指定厂商的 Provider 实例（使用指定的 OkHttpClient）
+     *
+     * 用于为带代理配置的 Provider 创建独立实例。
+     */
+    private fun createProvider(provider: AIProviderEnum, client: OkHttpClient): AIProviderInterface =
+        when (provider) {
+            AIProviderEnum.OPENAI -> OpenAIProvider(client, json)
+            AIProviderEnum.ANTHROPIC -> AnthropicProvider(client, json)
+            AIProviderEnum.GEMINI -> GeminiProvider(client, json)
+            AIProviderEnum.BAIDU -> BaiduProvider(client, json)
+            AIProviderEnum.ALIBABA -> AlibabaProvider(client, json)
+            AIProviderEnum.BYTEDANCE -> ByteDanceProvider(client, json)
+            AIProviderEnum.ZHIPU -> ZhipuProvider(client, json)
+            AIProviderEnum.MOONSHOT -> MoonshotProvider(client, json)
+            AIProviderEnum.OLLAMA -> OllamaProvider(client, json)
+            AIProviderEnum.CUSTOM -> CustomProvider(client, json)
+        }
 
     /** 文本对话 */
     override suspend fun chat(request: ChatRequest, config: AIConfig): ChatResponse {
@@ -115,8 +170,8 @@ class AIServiceImpl @Inject constructor(
             responseCache.enabled = false
         }
 
-        // 7. 获取 Provider
-        val provider = providers[config.provider]
+        // 7. 获取 Provider（Task 36.2: 支持代理配置）
+        val provider = providerForConfig(config)
             ?: return failureResponse(config.model, "不支持的厂商: ${config.provider}")
 
         // 8. 调用 chat
@@ -129,6 +184,16 @@ class AIServiceImpl @Inject constructor(
         // 9. 记录 usage
         val responseTime = System.currentTimeMillis() - startMs
         recordUsage(config, AIFeature.CHAT, response, responseTime)
+
+        // Task 36.4: 记录性能指标
+        performanceMonitor.recordRequest(
+            provider = config.provider,
+            success = response.success,
+            responseTimeMs = responseTime,
+            tokensInput = response.tokensInput,
+            tokensOutput = response.tokensOutput,
+            contentLength = response.content.length
+        )
 
         // 10. Task 33.4: 缓存成功响应
         if (response.success && response.content.isNotBlank()) {
@@ -164,7 +229,8 @@ class AIServiceImpl @Inject constructor(
         // Task 33.4: 精简提示词
         val optimizedPrompt = TokenOptimizer.compressPrompt(prompt)
 
-        val provider = providers[config.provider]
+        // Task 36.2: 获取 Provider（支持代理配置）
+        val provider = providerForConfig(config)
             ?: return failureResponse(config.model, "不支持的厂商: ${config.provider}")
 
         val startMs = System.currentTimeMillis()
@@ -176,12 +242,23 @@ class AIServiceImpl @Inject constructor(
         val responseTime = System.currentTimeMillis() - startMs
         recordUsage(config, AIFeature.FOOD_RECOGNITION, response, responseTime)
 
+        // Task 36.4: 记录性能指标
+        performanceMonitor.recordRequest(
+            provider = config.provider,
+            success = response.success,
+            responseTimeMs = responseTime,
+            tokensInput = response.tokensInput,
+            tokensOutput = response.tokensOutput,
+            contentLength = response.content.length
+        )
+
         return response
     }
 
     /** 连接测试 */
     override suspend fun testConnection(config: AIConfig): Boolean {
-        val provider = providers[config.provider] ?: return false
+        // Task 36.2: 测试连接时也应用代理配置
+        val provider = providerForConfig(config) ?: return false
         return runCatching { provider.testConnection(config) }.getOrDefault(false)
     }
 

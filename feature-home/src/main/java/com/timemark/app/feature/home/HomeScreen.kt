@@ -1,5 +1,6 @@
 package com.timemark.app.feature.home
 
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -11,10 +12,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.timemark.app.core.ui.components.SkeletonScreen
+import com.timemark.app.core.ui.layout.TwoPaneLayout
+import com.timemark.app.core.utils.WindowSizeClass
+import com.timemark.app.core.utils.windowSizeClass
 
 /**
  * 首页
@@ -25,11 +31,14 @@ import com.timemark.app.core.ui.components.SkeletonScreen
  * 状态分发：
  * - Loading -> 骨架屏
  * - Loaded  -> HomeContent
+ *
+ * Task 37.4: 平板模式（EXPANDED）使用双栏布局，左侧列表 + 右侧今日概览。
  */
 @Composable
 fun HomeScreen(navController: NavController) {
     val viewModel: HomeViewModel = hiltViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sizeClass = windowSizeClass()
 
     Scaffold(
         floatingActionButton = {
@@ -38,7 +47,9 @@ fun HomeScreen(navController: NavController) {
                 icon = { Icon(Icons.Default.Add, contentDescription = "添加") },
                 text = { Text("新建打卡") },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                // Task 37.1: 无障碍语义
+                modifier = Modifier.semantics { contentDescription = "新建打卡项目" }
             )
         }
     ) { padding ->
@@ -48,7 +59,34 @@ fun HomeScreen(navController: NavController) {
                 SkeletonScreen(modifier = Modifier.padding(padding))
             }
             is HomeUiState.Loaded -> {
-                HomeContent(state, viewModel, navController, Modifier.padding(padding))
+                // Task 37.4: 平板模式双栏布局
+                if (sizeClass == WindowSizeClass.EXPANDED) {
+                    TwoPaneLayout(
+                        leftContent = {
+                            HomeContent(
+                                state = state,
+                                viewModel = viewModel,
+                                navController = navController,
+                                modifier = Modifier
+                                    .padding(padding)
+                                    .fillMaxSize()
+                            )
+                        },
+                        rightContent = {
+                            // 右栏：今日概览详情
+                            TodayOverview(
+                                state = state,
+                                modifier = Modifier
+                                    .padding(padding)
+                                    .fillMaxSize()
+                            )
+                        },
+                        modifier = Modifier.fillMaxSize(),
+                        leftWeight = 0.5f
+                    )
+                } else {
+                    HomeContent(state, viewModel, navController, Modifier.padding(padding))
+                }
             }
         }
     }

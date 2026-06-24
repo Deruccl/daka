@@ -156,6 +156,29 @@ class SettingsViewModel @Inject constructor(
     val aiImageQuality: StateFlow<Int> = getSettingsUseCase.aiImageQuality()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 80)
 
+    // Task 37.2: 无障碍相关
+    /** 高对比度模式开关 */
+    val highContrastMode: StateFlow<Boolean> = getSettingsUseCase.highContrastMode()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+
+    /** 字体缩放比例 */
+    val fontScale: StateFlow<Float> = getSettingsUseCase.fontScale()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1.0f)
+
+    // Task 38.3: 日志管理相关
+    /** 日志开关 */
+    val loggingEnabled: StateFlow<Boolean> = getSettingsUseCase.loggingEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
+    /** 日志级别 */
+    val logLevel: StateFlow<String> = getSettingsUseCase.logLevel()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), "DEBUG")
+
+    // Task 38.4: 崩溃收集相关
+    /** 崩溃收集开关 */
+    val crashReportEnabled: StateFlow<Boolean> = getSettingsUseCase.crashReportEnabled()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+
     fun setThemeMode(mode: ThemeMode) = viewModelScope.launch { updateSettingsUseCase.themeMode(mode) }
     fun setBlurEnabled(enabled: Boolean) = viewModelScope.launch { updateSettingsUseCase.blurEnabled(enabled) }
     fun setAnimationEnabled(enabled: Boolean) = viewModelScope.launch { updateSettingsUseCase.animationEnabled(enabled) }
@@ -194,4 +217,34 @@ class SettingsViewModel @Inject constructor(
     // Task 33.4: Token 优化相关 setter
     fun setAICacheEnabled(enabled: Boolean) = viewModelScope.launch { updateSettingsUseCase.aiCacheEnabled(enabled) }
     fun setAIImageQuality(quality: Int) = viewModelScope.launch { updateSettingsUseCase.aiImageQuality(quality) }
+
+    // Task 37.2: 无障碍相关 setter
+    fun setHighContrastMode(enabled: Boolean) = viewModelScope.launch { updateSettingsUseCase.highContrastMode(enabled) }
+    fun setFontScale(scale: Float) = viewModelScope.launch { updateSettingsUseCase.fontScale(scale) }
+
+    // Task 38.3: 日志管理相关 setter
+    fun setLoggingEnabled(enabled: Boolean) = viewModelScope.launch {
+        updateSettingsUseCase.loggingEnabled(enabled)
+        // 同步到 Logger 工具
+        com.timemark.app.core.utils.Logger.setLoggingEnabled(enabled)
+    }
+
+    fun setLogLevel(level: String) = viewModelScope.launch {
+        updateSettingsUseCase.logLevel(level)
+        // 同步到 Logger 工具
+        val logLevel = when (level) {
+            "VERBOSE" -> com.timemark.app.core.utils.Logger.LogLevel.VERBOSE
+            "DEBUG" -> com.timemark.app.core.utils.Logger.LogLevel.DEBUG
+            "INFO" -> com.timemark.app.core.utils.Logger.LogLevel.INFO
+            "WARN" -> com.timemark.app.core.utils.Logger.LogLevel.WARN
+            "ERROR" -> com.timemark.app.core.utils.Logger.LogLevel.ERROR
+            else -> com.timemark.app.core.utils.Logger.LogLevel.DEBUG
+        }
+        com.timemark.app.core.utils.Logger.setLogLevel(logLevel)
+    }
+
+    // Task 38.4: 崩溃收集相关 setter
+    fun setCrashReportEnabled(enabled: Boolean) = viewModelScope.launch {
+        updateSettingsUseCase.crashReportEnabled(enabled)
+    }
 }

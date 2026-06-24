@@ -20,6 +20,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.timemark.app.core.ui.accessibility.focusableNavigation
 import com.timemark.app.core.ui.animation.parallaxScroll
 import com.timemark.app.core.ui.animation.staggeredEntrance
 import com.timemark.app.core.ui.components.EmptyState
@@ -106,9 +107,16 @@ fun HomeContent(
                         navController.navigate("edit_tracker/${trackerWithStats.tracker.id}")
                     },
                     // 应用瀑布式加载动画（每项延迟 50ms * index）
+                    // Task 37.3: 添加键盘导航支持，Enter 键打开详情
                     modifier = Modifier
                         .staggeredEntrance(index)
                         .animateItemPlacement()
+                        .focusableNavigation(
+                            order = index,
+                            onEnter = {
+                                navController.navigate("tracker_detail/${trackerWithStats.tracker.id}")
+                            }
+                        )
                 )
             }
         }

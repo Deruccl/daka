@@ -19,6 +19,7 @@ data class AIConfig(
     val enabled: Boolean = true,
     val priority: Int = 0,          // 优先级（数字越小越优先）
     val applicableFeatures: List<AIFeature> = emptyList(),
+    val proxyConfig: ProxyConfig? = null,  // Task 36.2: HTTP 代理配置
     val createdAt: Long = System.currentTimeMillis(),
     val updatedAt: Long = System.currentTimeMillis()
 )

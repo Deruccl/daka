@@ -27,6 +27,7 @@ import com.timemark.app.data.db.entity.TrackerEntity
  * - chat_history（v2，Task 33.2 新增）
  *
  * v1 -> v2 迁移：新增 chat_history 表用于本地保存 AI 对话历史。
+ * v2 -> v3 迁移：ai_configs 表新增 proxyConfig 列（Task 36.2 HTTP 代理支持）。
  */
 @Database(
     entities = [
@@ -37,7 +38,7 @@ import com.timemark.app.data.db.entity.TrackerEntity
         AIUsageEntity::class,
         ChatHistoryEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(TypeConverters::class)
@@ -82,6 +83,20 @@ abstract class TimeMarkDatabase : RoomDatabase() {
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_chat_history_timestamp ON chat_history(timestamp)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_chat_history_provider ON chat_history(provider)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_chat_history_role ON chat_history(role)")
+            }
+        }
+
+        /**
+         * v2 -> v3 迁移：ai_configs 表新增 proxyConfig 列（Task 36.2）
+         *
+         * proxyConfig 列存储 ProxyConfig 的 JSON 字符串，默认空字符串表示无代理。
+         * 使用 ALTER TABLE ADD COLUMN 方式，不影响已有数据。
+         */
+        val MIGRATION_2_3: Migration = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "ALTER TABLE ai_configs ADD COLUMN proxyConfig TEXT NOT NULL DEFAULT ''"
+                )
             }
         }
     }

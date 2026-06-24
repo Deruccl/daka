@@ -246,17 +246,17 @@
   - [x] SubTask 35.2: 实现点击进入下一级视图（400ms 动画）、返回上一级（350ms 回弹）
   - [x] SubTask 35.3: 实现时间轴当前时间红色标记
 
-- [ ] Task 36: 多模型 API 管理补全
-  - [ ] SubTask 36.1: 实现 API Key 密码模式输入（显示/隐藏）
-  - [ ] SubTask 36.2: 实现 HTTP 代理支持
-  - [ ] SubTask 36.3: 实现协同效果对比（节省 Token 比例）
-  - [ ] SubTask 36.4: 实现 API 性能监控（响应时间/成功率/质量评分）
+- [x] Task 36: 多模型 API 管理补全
+  - [x] SubTask 36.1: 实现 API Key 密码模式输入（显示/隐藏）
+  - [x] SubTask 36.2: 实现 HTTP 代理支持
+  - [x] SubTask 36.3: 实现协同效果对比（节省 Token 比例）
+  - [x] SubTask 36.4: 实现 API 性能监控（响应时间/成功率/质量评分）
 
-- [ ] Task 37: 无障碍与兼容性补全
-  - [ ] SubTask 37.1: 为所有可交互元素添加内容描述、图片文字说明、图标按钮语义
-  - [ ] SubTask 37.2: 实现高对比度模式、超大字体布局适配
-  - [ ] SubTask 37.3: 实现键盘导航、TalkBack 屏幕阅读器支持
-  - [ ] SubTask 37.4: 实现平板双栏布局适配
+- [x] Task 37: 无障碍与兼容性补全
+  - [x] SubTask 37.1: 为所有可交互元素添加内容描述、图片文字说明、图标按钮语义
+  - [x] SubTask 37.2: 实现高对比度模式、超大字体布局适配
+  - [x] SubTask 37.3: 实现键盘导航、TalkBack 屏幕阅读器支持
+  - [x] SubTask 37.4: 实现平板双栏布局适配
 
 - [ ] Task 38: UI 设计系统与错误处理补全
   - [ ] SubTask 38.1: 集成自定义字体（Noto Sans SC、Inter、JetBrains Mono）

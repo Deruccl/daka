@@ -15,10 +15,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowDownward
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.CompareArrows
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -72,6 +74,20 @@ fun AIConfigScreen(navController: NavController) {
                         Icon(
                             imageVector = Icons.Default.Insights,
                             contentDescription = "Token 统计"
+                        )
+                    }
+                    // Task 36.3: 协同效果入口
+                    IconButton(onClick = { navController.navigate("collaborative_stats") }) {
+                        Icon(
+                            imageVector = Icons.Default.CompareArrows,
+                            contentDescription = "协同效果"
+                        )
+                    }
+                    // Task 36.4: 性能监控入口
+                    IconButton(onClick = { navController.navigate("performance_monitor") }) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = "性能监控"
                         )
                     }
                 }

@@ -26,6 +26,10 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +69,7 @@ enum class GlassButtonType {
  * @param type 按钮类型
  * @param enabled 是否启用
  * @param icon 可选的前置图标
+ * @param contentDescription 无障碍内容描述，为 null 时使用 [text]
  */
 @Composable
 fun GlassButton(
@@ -73,7 +78,8 @@ fun GlassButton(
     modifier: Modifier = Modifier,
     type: GlassButtonType = GlassButtonType.PRIMARY,
     enabled: Boolean = true,
-    icon: @Composable (() -> Unit)? = null
+    icon: @Composable (() -> Unit)? = null,
+    contentDescription: String? = null
 ) {
     val isDark = isSystemInDarkTheme()
     val interactionSource = remember { MutableInteractionSource() }
@@ -127,6 +133,11 @@ fun GlassButton(
 
     Box(
         modifier = modifier
+            // 无障碍语义：设置内容描述与按钮角色，便于 TalkBack 识别
+            .semantics {
+                this.contentDescription = contentDescription ?: text
+                role = Role.Button
+            }
             .scale(scale)
             .blur(if (type == GlassButtonType.PRIMARY) 0.dp else 10.dp)
             .background(

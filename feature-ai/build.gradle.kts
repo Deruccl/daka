@@ -32,6 +32,7 @@ dependencies {
     // Project modules
     implementation(project(":core"))
     implementation(project(":domain"))
+    implementation(project(":ai"))  // Task 36.3/36.4: 访问 CollaborativeService、PerformanceMonitor
 
     // Compose
     implementation(platform(libs.compose.bom))

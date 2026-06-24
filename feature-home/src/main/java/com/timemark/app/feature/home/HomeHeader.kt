@@ -20,6 +20,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.timemark.app.core.ui.components.ProgressRing
 import com.timemark.app.core.ui.components.glass.GlassCard
@@ -56,14 +58,21 @@ fun HomeHeader(
             Column(modifier = Modifier.weight(1f)) {
                 // 日期切换行
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = { viewModel.previousDay() }) {
+                    IconButton(
+                        onClick = { viewModel.previousDay() },
+                        // 无障碍：明确描述按钮作用
+                        modifier = Modifier.semantics { contentDescription = "上一天" }
+                    ) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "上一天")
                     }
                     Text(
                         text = TimeUtils.formatDate(state.date),
                         style = MaterialTheme.typography.titleMedium
                     )
-                    IconButton(onClick = { viewModel.nextDay() }) {
+                    IconButton(
+                        onClick = { viewModel.nextDay() },
+                        modifier = Modifier.semantics { contentDescription = "下一天" }
+                    ) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "下一天")
                     }
                     // 非今天时显示"今天"快捷按钮
@@ -71,7 +80,8 @@ fun HomeHeader(
                         Spacer(modifier = Modifier.width(4.dp))
                         TextButton(
                             onClick = { viewModel.goToToday() },
-                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            modifier = Modifier.semantics { contentDescription = "回到今天" }
                         ) {
                             Text("今天", style = MaterialTheme.typography.labelMedium)
                         }
@@ -91,11 +101,15 @@ fun HomeHeader(
                     )
                 }
             }
-            // 进度环
+            // 进度环：添加无障碍内容描述，播报完成率
+            val progressPercent = (state.completionRate * 100).toInt()
             ProgressRing(
                 progress = state.completionRate,
                 size = 80.dp,
-                text = "${(state.completionRate * 100).toInt()}%"
+                text = "$progressPercent%",
+                modifier = Modifier.semantics {
+                    contentDescription = "今日完成率 $progressPercent%，已完成 ${state.totalCompleted} 项，共 ${state.totalCount} 项"
+                }
             )
         }
     }

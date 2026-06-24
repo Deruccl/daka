@@ -2,6 +2,27 @@ package com.timemark.app.domain.model
 
 import kotlinx.serialization.Serializable
 
+/**
+ * HTTP 代理配置（Task 36.2）
+ *
+ * 用于为单个 AI Provider 配置网络代理，支持需要科学上网或内网穿透的场景。
+ * 代理认证（username/password）为可选项，仅当代理服务器需要认证时填写。
+ *
+ * @param host 代理服务器地址
+ * @param port 代理服务器端口
+ * @param username 代理认证用户名（可选）
+ * @param password 代理认证密码（可选）
+ * @param enabled 是否启用代理
+ */
+@Serializable
+data class ProxyConfig(
+    val host: String = "",
+    val port: Int = 0,
+    val username: String? = null,
+    val password: String? = null,
+    val enabled: Boolean = false
+)
+
 /** 聊天消息 */
 @Serializable
 data class ChatMessage(

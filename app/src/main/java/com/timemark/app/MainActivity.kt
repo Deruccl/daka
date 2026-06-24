@@ -4,6 +4,11 @@ import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
@@ -79,6 +84,12 @@ class MainActivity : FragmentActivity() {
             val secureScreen by settingsRepository.secureScreen
                 .collectAsStateWithLifecycle(initialValue = false)
 
+            // Task 37.2: 观察高对比度模式与字体缩放设置
+            val highContrast by settingsRepository.highContrastMode
+                .collectAsStateWithLifecycle(initialValue = false)
+            val fontScale by settingsRepository.fontScale
+                .collectAsStateWithLifecycle(initialValue = 1.0f)
+
             // 应用 FLAG_SECURE
             LaunchedEffect(secureScreen) {
                 applySecureFlag(secureScreen)
@@ -93,19 +104,36 @@ class MainActivity : FragmentActivity() {
                 ThemeMode.SYSTEM -> isSystemInDarkTheme()
             }
 
-            TimeMarkTheme(darkTheme = darkTheme) {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
+            // Task 38.2: 主题切换时使用 AnimatedContent 包装，配合 Theme.kt 中的
+            // animateColorScheme 实现 600ms 平滑过渡（颜色过渡 + 内容淡入淡出）
+            AnimatedContent(
+                targetState = darkTheme,
+                transitionSpec = {
+                    // 主题切换：600ms 淡入淡出过渡，与 animateColorScheme 的时长一致
+                    fadeIn(animationSpec = tween(600)) togetherWith
+                        fadeOut(animationSpec = tween(600))
+                },
+                label = "themeTransition"
+            ) { isDark ->
+                // Task 37.2: 传入高对比度模式与字体缩放
+                TimeMarkTheme(
+                    darkTheme = isDark,
+                    highContrast = highContrast,
+                    fontScale = fontScale
                 ) {
-                    if (isLocked) {
-                        // 显示锁屏页面
-                        LockScreen(
-                            onUnlocked = { lockState.value = false }
-                        )
-                    } else {
-                        val navController = rememberNavController()
-                        ScaffoldMain(navController = navController)
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        if (isLocked) {
+                            // 显示锁屏页面
+                            LockScreen(
+                                onUnlocked = { lockState.value = false }
+                            )
+                        } else {
+                            val navController = rememberNavController()
+                            ScaffoldMain(navController = navController)
+                        }
                     }
                 }
             }

@@ -33,6 +33,11 @@ import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timemark.app.core.ui.theme.DarkSurface
@@ -131,6 +136,12 @@ private fun GlassNavItem(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
         modifier = Modifier
+            // 无障碍：设置 Tab 角色、选中状态与内容描述
+            .semantics {
+                role = Role.Tab
+                this.contentDescription = item.label
+                this.selected = isSelected
+            }
             .clickable(onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 4.dp)
     ) {

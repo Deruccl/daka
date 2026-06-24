@@ -9,11 +9,14 @@ import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
 import com.timemark.app.backup.AutoBackupScheduler
 import com.timemark.app.core.utils.Logger
+import com.timemark.app.crash.CrashHandler
+import com.timemark.app.data.datastore.SettingsDataStore
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 /**
@@ -37,10 +40,22 @@ class TimeMarkApp : Application(), Configuration.Provider {
     @Inject
     lateinit var autoBackupScheduler: AutoBackupScheduler
 
+    @Inject
+    lateinit var settingsDataStore: SettingsDataStore
+
+    /** 崩溃处理器实例 */
+    private var crashHandler: CrashHandler? = null
+
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
+        // Task 38.3: 初始化日志工具，设置应用上下文以启用文件日志
+        Logger.init(this)
+
+        // Task 38.4: 注册崩溃处理器（先安装，再根据设置决定是否启用）
+        crashHandler = CrashHandler.install(this)
+
         // 仅做必要初始化，避免在主线程执行耗时操作
         createNotificationChannels()
         configureLeakCanary()
@@ -48,7 +63,44 @@ class TimeMarkApp : Application(), Configuration.Provider {
         appScope.launch {
             autoBackupScheduler.scheduleIfNeeded()
         }
+        // Task 38.3/38.4: 从设置读取日志与崩溃收集开关，应用到工具类
+        appScope.launch {
+            applyLoggingAndCrashSettings()
+        }
         Logger.i(tag = TAG, msg = "TimeMarkApp onCreate")
+    }
+
+    /**
+     * Task 38.3/38.4: 从 DataStore 读取日志与崩溃收集设置并应用
+     *
+     * - 日志开关：控制 Logger 是否写入文件
+     * - 日志级别：控制 Logger 写入文件的最低级别
+     * - 崩溃收集开关：控制 CrashHandler 是否捕获崩溃
+     */
+    private suspend fun applyLoggingAndCrashSettings() {
+        runCatching {
+            // 日志开关
+            val loggingEnabled = settingsDataStore.loggingEnabled.first()
+            Logger.setLoggingEnabled(loggingEnabled)
+
+            // 日志级别
+            val logLevelStr = settingsDataStore.logLevel.first()
+            val logLevel = when (logLevelStr) {
+                "VERBOSE" -> Logger.LogLevel.VERBOSE
+                "DEBUG" -> Logger.LogLevel.DEBUG
+                "INFO" -> Logger.LogLevel.INFO
+                "WARN" -> Logger.LogLevel.WARN
+                "ERROR" -> Logger.LogLevel.ERROR
+                else -> Logger.LogLevel.DEBUG
+            }
+            Logger.setLogLevel(logLevel)
+
+            // 崩溃收集开关
+            val crashEnabled = settingsDataStore.crashReportEnabled.first()
+            crashHandler?.setEnabled(crashEnabled)
+
+            Logger.d(tag = TAG, msg = "日志与崩溃设置已应用：logging=$loggingEnabled, level=$logLevelStr, crash=$crashEnabled")
+        }
     }
 
     /**

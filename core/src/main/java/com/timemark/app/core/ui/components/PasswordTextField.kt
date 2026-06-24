@@ -7,8 +7,11 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -47,6 +50,8 @@ import com.timemark.app.core.ui.theme.Primary
  * - 显示/隐藏密码切换（眼睛图标）
  * - 默认隐藏（KeyboardType.Password）
  * - 占位符模式（显示 ••••••，仅当 [placeholderMode] 为 true 时）
+ * - 自定义标签 [label]（显示在输入框上方）
+ * - 错误提示 [error]（显示在输入框下方，错误色）
  *
  * 占位符模式适用于编辑场景：API Key 默认显示为 ••••••••，
  * 用户点击修改后才显示实际内容，避免敏感信息泄露。
@@ -54,8 +59,10 @@ import com.timemark.app.core.ui.theme.Primary
  * @param value 当前文本值
  * @param onValueChange 文本变化回调
  * @param modifier 修饰符
+ * @param label 标签文字（可选，显示在输入框上方）
  * @param placeholder 占位提示文字
  * @param placeholderMode 是否为占位符模式（true 时显示 ••••••，点击后切换为编辑模式）
+ * @param error 错误提示文字（可选，非 null 时显示在输入框下方）
  * @param enabled 是否启用
  * @param singleLine 是否单行
  */
@@ -64,8 +71,10 @@ fun PasswordTextField(
     value: String,
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
+    label: String = "",
     placeholder: String = "",
     placeholderMode: Boolean = false,
+    error: String? = null,
     enabled: Boolean = true,
     singleLine: Boolean = true
 ) {
@@ -100,88 +109,117 @@ fun PasswordTextField(
     // 是否以密码形式显示（不可见）
     val showAsPassword = !passwordVisible && (!placeholderMode || editMode)
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .drawBehind {
-                if (isFocused) {
-                    drawRect(
-                        brush = Brush.radialGradient(
-                            colors = listOf(Primary.copy(alpha = 0.4f), Color.Transparent),
-                            center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
-                            radius = size.maxDimension
-                        )
-                    )
-                }
-            }
-            .blur(10.dp)
-            .background(
-                brush = Brush.verticalGradient(backgroundColors),
-                shape = RoundedCornerShape(12.dp)
+    // 错误状态下的边框色
+    val effectiveBorderColor = if (error != null) {
+        MaterialTheme.colorScheme.error
+    } else {
+        borderColor
+    }
+
+    Column(modifier = modifier.fillMaxWidth()) {
+        // 标签（可选）
+        if (label.isNotEmpty()) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            .border(
-                width = if (isFocused) 2.dp else 1.dp,
-                color = borderColor,
-                shape = RoundedCornerShape(12.dp)
-            )
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-            .clickable(
-                // 占位符模式下点击进入编辑模式
-                enabled = placeholderMode && !editMode,
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            ) {
-                editMode = true
-                passwordVisible = true
-            }
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            BasicTextField(
-                value = displayValue,
-                onValueChange = onValueChange,
-                modifier = Modifier.weight(1f),
-                enabled = enabled && (!placeholderMode || editMode),
-                singleLine = singleLine,
-                textStyle = TextStyle(
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = MaterialTheme.typography.bodyMedium.fontSize,
-                    fontWeight = MaterialTheme.typography.bodyMedium.fontWeight
-                ),
-                cursorBrush = SolidColor(Primary),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = if (showAsPassword) KeyboardType.Password else KeyboardType.Text
-                ),
-                visualTransformation = if (showAsPassword) PasswordVisualTransformation() else VisualTransformation.None,
-                interactionSource = interactionSource,
-                decorationBox = { innerTextField ->
-                    Box(
-                        contentAlignment = Alignment.CenterStart,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        if (displayValue.isEmpty()) {
-                            Text(
-                                text = placeholder,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .drawBehind {
+                    if (isFocused) {
+                        drawRect(
+                            brush = Brush.radialGradient(
+                                colors = listOf(Primary.copy(alpha = 0.4f), Color.Transparent),
+                                center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f),
+                                radius = size.maxDimension
                             )
-                        }
-                        innerTextField()
+                        )
                     }
                 }
-            )
-            // 显示/隐藏密码切换图标（仅在编辑模式或非占位符模式下显示）
-            if (!placeholderMode || editMode) {
-                IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                    Icon(
-                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (passwordVisible) "隐藏密码" else "显示密码",
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                .blur(10.dp)
+                .background(
+                    brush = Brush.verticalGradient(backgroundColors),
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .border(
+                    width = if (isFocused) 2.dp else 1.dp,
+                    color = effectiveBorderColor,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+                .clickable(
+                    // 占位符模式下点击进入编辑模式
+                    enabled = placeholderMode && !editMode,
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    editMode = true
+                    passwordVisible = true
+                }
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                BasicTextField(
+                    value = displayValue,
+                    onValueChange = onValueChange,
+                    modifier = Modifier.weight(1f),
+                    enabled = enabled && (!placeholderMode || editMode),
+                    singleLine = singleLine,
+                    textStyle = TextStyle(
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = MaterialTheme.typography.bodyMedium.fontSize,
+                        fontWeight = MaterialTheme.typography.bodyMedium.fontWeight
+                    ),
+                    cursorBrush = SolidColor(Primary),
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = if (showAsPassword) KeyboardType.Password else KeyboardType.Text
+                    ),
+                    visualTransformation = if (showAsPassword) PasswordVisualTransformation() else VisualTransformation.None,
+                    interactionSource = interactionSource,
+                    decorationBox = { innerTextField ->
+                        Box(
+                            contentAlignment = Alignment.CenterStart,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            if (displayValue.isEmpty()) {
+                                Text(
+                                    text = placeholder,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                )
+                            }
+                            innerTextField()
+                        }
+                    }
+                )
+                // 显示/隐藏密码切换图标（仅在编辑模式或非占位符模式下显示）
+                if (!placeholderMode || editMode) {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                            contentDescription = if (passwordVisible) "隐藏密码" else "显示密码",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
+        }
+
+        // 错误提示（可选）
+        if (error != null) {
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = error,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error
+            )
         }
     }
 }

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Task 38.3/38.4: FileProvider 路径配置，用于分享日志与崩溃文件 -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 应用内部文件目录（logs/crashes 目录） -->
+    <files-path name="internal_files" path="." />
+    <!-- 应用缓存目录（导出的日志文件） -->
+    <cache-path name="cache_files" path="." />
+</paths>

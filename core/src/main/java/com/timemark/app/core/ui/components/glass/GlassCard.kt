@@ -31,12 +31,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timemark.app.core.ui.theme.DarkSurface
 import com.timemark.app.core.ui.theme.GlassGradientDark
 import com.timemark.app.core.ui.theme.GlassGradientLight
 import com.timemark.app.core.ui.theme.LightSurface
+import com.timemark.app.core.ui.theme.LocalHighContrastMode
 import com.timemark.app.core.ui.theme.TimeMarkTheme
 import com.timemark.app.core.utils.PerformanceDetector
 import com.timemark.app.core.utils.PerformanceLevel
@@ -83,6 +88,7 @@ enum class GlassLevel {
  * @param onClick 点击回调，非 null 时启用点击与按压动效
  * @param blurEnabled 模糊开关，null 表示自动检测设备性能
  * @param rippleEnabled 水波纹开关，默认 true
+ * @param contentDescription 无障碍内容描述，为 null 时不设置语义
  * @param content 卡片内容
  */
 @Composable
@@ -93,19 +99,23 @@ fun GlassCard(
     onClick: (() -> Unit)? = null,
     blurEnabled: Boolean? = null,
     rippleEnabled: Boolean = true,
+    contentDescription: String? = null,
     content: @Composable () -> Unit
 ) {
     val isDark = isSystemInDarkTheme()
     val context = LocalContext.current
+    // 高对比度模式：增强边框与对比度
+    val isHighContrast = LocalHighContrastMode.current
 
     // 检测设备性能等级（单例缓存，仅计算一次）
     val performanceLevel = remember { PerformanceDetector.detectDevicePerformance(context) }
 
     // 基础视觉参数
+    // 高对比度模式下减少透明度（更不透明），增强文字可读性
     val opacity = when (level) {
-        GlassLevel.LIGHT -> 0.7f
-        GlassLevel.STANDARD -> 0.8f
-        GlassLevel.THICK -> 0.9f
+        GlassLevel.LIGHT -> if (isHighContrast) 0.92f else 0.7f
+        GlassLevel.STANDARD -> if (isHighContrast) 0.95f else 0.8f
+        GlassLevel.THICK -> if (isHighContrast) 0.98f else 0.9f
     }
     val baseBlurRadius = when (level) {
         GlassLevel.LIGHT -> 10.dp
@@ -145,9 +155,20 @@ fun GlassCard(
 
     // 玻璃渐变色（根据主题选择）
     val glassGradient = if (isDark) GlassGradientDark else GlassGradientLight
-    val borderColor = if (isDark) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.4f)
-    val borderBottomColor = if (isDark) Color.White.copy(alpha = 0.05f) else Color.White.copy(alpha = 0.1f)
+    // 高对比度模式下增强边框颜色与宽度
+    val borderColor = when {
+        isHighContrast -> if (isDark) Color.White.copy(alpha = 0.6f) else Color.Black.copy(alpha = 0.7f)
+        isDark -> Color.White.copy(alpha = 0.15f)
+        else -> Color.White.copy(alpha = 0.4f)
+    }
+    val borderBottomColor = when {
+        isHighContrast -> if (isDark) Color.White.copy(alpha = 0.3f) else Color.Black.copy(alpha = 0.4f)
+        isDark -> Color.White.copy(alpha = 0.05f)
+        else -> Color.White.copy(alpha = 0.1f)
+    }
     val highlightColor = Color.White.copy(alpha = 0.3f)
+    // 高对比度模式下边框宽度增至 2dp
+    val borderWidth = if (isHighContrast) 2.dp else 1.dp
 
     // 按压动画状态（手动管理，避免 clickable 与 detectTapGestures 冲突）
     var isPressed by remember { mutableStateOf(false) }
@@ -163,6 +184,15 @@ fun GlassCard(
 
     Box(
         modifier = modifier
+            // 无障碍语义：设置内容描述与角色（可点击为 Button，否则为 Image）
+            .then(
+                if (contentDescription != null) {
+                    Modifier.semantics {
+                        this.contentDescription = contentDescription
+                        role = if (onClick != null) Role.Button else Role.Image
+                    }
+                } else Modifier
+            )
             .shadow(elevation = elevation, shape = shape, clip = false)
             .then(if (isBlurActive) Modifier.blur(effectiveBlurRadius) else Modifier)
             .background(
@@ -175,10 +205,10 @@ fun GlassCard(
             .then(if (isRefractionEnabled) Modifier.drawRefractionEdges(shape) else Modifier)
             // 顶部高光线
             .drawHighlightLine(shape, highlightColor)
-            // 渐变边框
+            // 渐变边框（高对比度模式下加宽）
             .border(
                 border = BorderStroke(
-                    width = 1.dp,
+                    width = borderWidth,
                     brush = Brush.verticalGradient(
                         colors = listOf(borderColor, borderBottomColor)
                     )

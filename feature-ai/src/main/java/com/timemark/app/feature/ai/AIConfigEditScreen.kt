@@ -1,6 +1,7 @@
 package com.timemark.app.feature.ai
 
 import androidx.compose.foundation.layout.Arrangement
+
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,6 +39,7 @@ import com.timemark.app.core.ui.components.glass.GlassTextField
 import com.timemark.app.core.ui.components.glass.GlassTopBar
 import com.timemark.app.domain.model.AIFeature
 import com.timemark.app.domain.model.AIModelType
+import com.timemark.app.domain.model.ProxyConfig
 import com.timemark.app.feature.ai.config.AIConfigViewModel
 
 /**
@@ -71,6 +74,13 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
     var enabled by remember { mutableStateOf(true) }
     val applicableFeatures = remember { mutableStateOf<Set<AIFeature>>(emptySet()) }
 
+    // Task 36.2: 代理配置状态
+    var proxyEnabled by remember { mutableStateOf(false) }
+    var proxyHost by remember { mutableStateOf("") }
+    var proxyPort by remember { mutableStateOf("0") }
+    var proxyUsername by remember { mutableStateOf("") }
+    var proxyPassword by remember { mutableStateOf("") }
+
     // 配置加载后初始化表单
     LaunchedEffect(config) {
         if (config != null && !initialized) {
@@ -85,8 +95,29 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
             maxTokens = config.maxTokens.toString()
             enabled = config.enabled
             applicableFeatures.value = config.applicableFeatures.toSet()
+            // Task 36.2: 初始化代理配置
+            proxyEnabled = config.proxyConfig?.enabled ?: false
+            proxyHost = config.proxyConfig?.host ?: ""
+            proxyPort = (config.proxyConfig?.port ?: 0).toString()
+            proxyUsername = config.proxyConfig?.username ?: ""
+            proxyPassword = config.proxyConfig?.password ?: ""
             initialized = true
         }
+    }
+
+    /**
+     * Task 36.2: 根据表单状态构造 ProxyConfig
+     * 代理未启用或地址为空时返回 null
+     */
+    fun buildProxyConfig(): ProxyConfig? {
+        if (!proxyEnabled || proxyHost.isBlank()) return null
+        return ProxyConfig(
+            host = proxyHost.trim(),
+            port = proxyPort.toIntOrNull() ?: 0,
+            username = proxyUsername.ifBlank { null },
+            password = proxyPassword.ifBlank { null },
+            enabled = true
+        )
     }
 
     Scaffold(
@@ -216,6 +247,58 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
                 }
             }
 
+            // Task 36.2: HTTP 代理配置
+            GlassCard(level = GlassLevel.STANDARD, modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text("HTTP 代理", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+
+                    // 代理开关
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("启用代理", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = "通过代理服务器访问 API",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = proxyEnabled,
+                            onCheckedChange = { proxyEnabled = it }
+                        )
+                    }
+
+                    // 代理详情表单（仅在启用时显示）
+                    if (proxyEnabled) {
+                        Text("代理地址", style = MaterialTheme.typography.labelMedium)
+                        GlassTextField(value = proxyHost, onValueChange = { proxyHost = it }, placeholder = "如 127.0.0.1")
+
+                        Text("代理端口", style = MaterialTheme.typography.labelMedium)
+                        GlassTextField(value = proxyPort, onValueChange = { proxyPort = it }, placeholder = "如 7890")
+
+                        Text("用户名（可选）", style = MaterialTheme.typography.labelMedium)
+                        GlassTextField(value = proxyUsername, onValueChange = { proxyUsername = it }, placeholder = "代理认证用户名")
+
+                        Text("密码（可选）", style = MaterialTheme.typography.labelMedium)
+                        // Task 36.1: 代理密码也使用密码模式输入
+                        PasswordTextField(
+                            value = proxyPassword,
+                            onValueChange = { proxyPassword = it },
+                            placeholder = "代理认证密码"
+                        )
+                    }
+                }
+            }
+
             // 适用功能
             GlassCard(level = GlassLevel.STANDARD, modifier = Modifier.fillMaxWidth()) {
                 Column(
@@ -267,7 +350,8 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
                                         apiKey = apiKey,
                                         baseUrl = baseUrl,
                                         model = model,
-                                        modelType = modelType
+                                        modelType = modelType,
+                                        proxyConfig = buildProxyConfig()
                                     )
                                     viewModel.testConnection(testConfig)
                                 }
@@ -287,7 +371,8 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
                                         apiKey = apiKey,
                                         baseUrl = baseUrl,
                                         model = model,
-                                        modelType = modelType
+                                        modelType = modelType,
+                                        proxyConfig = buildProxyConfig()
                                     )
                                     viewModel.testConnection(testConfig)
                                 },
@@ -304,7 +389,8 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
                                         apiKey = apiKey,
                                         baseUrl = baseUrl,
                                         model = model,
-                                        modelType = modelType
+                                        modelType = modelType,
+                                        proxyConfig = buildProxyConfig()
                                     )
                                     viewModel.testConnection(testConfig)
                                 },
@@ -343,6 +429,7 @@ fun AIConfigEditScreen(navController: NavController, configId: Long) {
                             maxTokens = maxTokens.toIntOrNull() ?: 4096,
                             enabled = enabled,
                             applicableFeatures = applicableFeatures.value.toList(),
+                            proxyConfig = buildProxyConfig(),
                             updatedAt = System.currentTimeMillis()
                         )
                         viewModel.saveConfig(updated)

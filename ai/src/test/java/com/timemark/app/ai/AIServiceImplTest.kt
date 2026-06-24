@@ -46,7 +46,10 @@ class AIServiceImplTest {
         fakeSettingsRepository = FakeSettingsRepository()
         fakeAIUsageRepository = FakeAIUsageRepository()
         fakeAIConfigRepository = FakeAIConfigRepository()
-        service = AIServiceImpl(client, json, fakeAIUsageRepository, fakeAIConfigRepository, fakeSettingsRepository)
+        // Task 36.2/36.4: 传入 ProxyManager 和 PerformanceMonitor
+        val proxyManager = ProxyManager(client)
+        val performanceMonitor = PerformanceMonitor()
+        service = AIServiceImpl(client, json, fakeAIUsageRepository, fakeAIConfigRepository, fakeSettingsRepository, proxyManager, performanceMonitor)
     }
 
     @Test
